@@ -228,7 +228,11 @@ class RegexParser(object):
                         revDic[item].append(k)
                     except:
                         revDic[item] = [k]
-        return dic , revDic
+        flag = False
+        for o in revDic.keys():
+            if len(revDic[o]) > 1:
+                flag = True
+        return dic , revDic ,flag
 
     def dicToString(self , dic):
         stri= "S"
@@ -241,11 +245,16 @@ class RegexParser(object):
         stri = stri[:len(stri)-1]
         return stri
 
+    def revDicToString(self , revDic):
+        return ""
     def run(self , string):
         string = self.paternize(self.clean(string))
         string = self.findTime(string)
         string = self.competeDays(string)
         string = self.combine(string)
-        dic ,revDic = self.toSeqDic(string)
-        string = self.dicToString(dic)
+        dic ,revDic , flag = self.toSeqDic(string)
+        if flag is True:
+            string = self.revDicToString(revDic)
+        else:
+            string = self.dicToString(dic)
         return string ,dic ,revDic
