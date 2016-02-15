@@ -164,7 +164,7 @@ class RegexParser(object):
         stri = "S"+tmp
         return stri[:len(stri)-1]
 
-    # convert time to militarry time
+    # convert time to military time
     def timeToStr(self, time):
         if time < 10 : 
             return "000" +str(time)
@@ -177,6 +177,7 @@ class RegexParser(object):
         return str(time)
 
     def timeInSequence(self , list_time):
+        # genrate overlapping time sequences and find out distinct intervals.
         list_time = sorted(list_time)
         big_list = []
         for el in list_time : 
@@ -208,6 +209,7 @@ class RegexParser(object):
         return interval
 
     def toSeqDic(self , string):
+        # generate dat aggregated sequence dictionary for computation.
         lis = string.split(";")
         dic = {}
         for elem in lis : 
@@ -244,12 +246,14 @@ class RegexParser(object):
         return dic , revDic ,flag
 
     def mergeDays(self , lis):
+        # merge sorted days in the list 
         stri = "S"
         for el in sorted(lis):
             stri = stri + el +","
         return stri[:len(stri) - 1] + ":"
 
     def dicToString(self , dic):
+        # convert dictionary to string for rendering
         stri= "S"
         for key in dic.keys():
             if(len(dic[key]) >= 1):
@@ -261,6 +265,7 @@ class RegexParser(object):
         return stri
 
     def revDicToString(self , revDic):
+        # convert time aggregated dictionary to string
         stri = ""
         for k in revDic.keys():
             stri = stri + self.mergeDays(revDic[k]) + k + ";"
