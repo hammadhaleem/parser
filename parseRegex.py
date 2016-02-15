@@ -264,7 +264,6 @@ class RegexParser(object):
     def dicToString(self , dic):
         # convert dictionary to string for rendering
         stri= "S"
-        print sorted(dic.keys())
         for key in sorted(dic.keys()):
             if(len(dic[key]) >= 1):
                 stri = stri + key + ":" 
