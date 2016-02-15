@@ -35,7 +35,7 @@ class RegexParser(object):
         
     ### clean the string according to the constraints.
     def clean(self,string ):
-            string  = string.replace("–","-").lower()
+            string  = string.lower().replace("–","-").replace("weekday","mon to fri")
 
             for day in days:
                 if day in string :
@@ -106,7 +106,10 @@ class RegexParser(object):
         string  = string[1:]
         try:
             day1 , day2 = string.split("-")
+            day1 = int(day1)
+            day2 = int(day2)
         except :
+            string = string.replace("-","")
             return "S"+string
 
         day1 = int(day1)
@@ -240,9 +243,15 @@ class RegexParser(object):
                     except:
                         revDic[item] = [k]
         flag = False
+
         for o in revDic.keys():
             if len(revDic[o]) > 1:
                 flag = True
+                items =  revDic[o]
+                for i in revDic.keys():
+                    for j in revDic[i]:
+                        if j in items and revDic[i] != items:
+                            flag = False
         return dic , revDic ,flag
 
     def mergeDays(self , lis):
@@ -255,7 +264,8 @@ class RegexParser(object):
     def dicToString(self , dic):
         # convert dictionary to string for rendering
         stri= "S"
-        for key in dic.keys():
+        print sorted(dic.keys())
+        for key in sorted(dic.keys()):
             if(len(dic[key]) >= 1):
                 stri = stri + key + ":" 
                 for time in dic[key]:
