@@ -38,10 +38,11 @@ for k  in cases.keys():
   line  ,dic, revDic= pr.run(k)
   line = line.strip(" ")
   if line != cases[k].strip(" "):
-    print  count, "\t" , line,"\t",cases[k]  ,"\n\t\t" , dic ,"\n\t\t" ,revDic
+    print  count, "\t" , " Output :",line,"\t"," Expected :",cases[k]  ,"\n\t\t" , dic ,"\n\t\t" ,revDic
 
     count = count +1
   else:
-    print count , True , line
+    print count , "Passed : " , True , ":" ,  line
 
+print "Total Erorrs  : " , count
 

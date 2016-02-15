@@ -94,6 +94,7 @@ class RegexParser(object):
                 ret.append("S"+elem)
         return ret
 
+
     def constructSeries(self , string):
         string  = string[1:]
         try:
@@ -234,6 +235,12 @@ class RegexParser(object):
                 flag = True
         return dic , revDic ,flag
 
+    def mergeDays(self , lis):
+        stri = "S"
+        for el in sorted(lis):
+            stri = stri + el +","
+        return stri[:len(stri) - 1] + ":"
+
     def dicToString(self , dic):
         stri= "S"
         for key in dic.keys():
@@ -246,7 +253,12 @@ class RegexParser(object):
         return stri
 
     def revDicToString(self , revDic):
-        return ""
+        stri = ""
+        for k in revDic.keys():
+            stri = stri + self.mergeDays(revDic[k]) + k + ";"
+        stri = stri[:len(stri)-1]
+        return stri
+
     def run(self , string):
         string = self.paternize(self.clean(string))
         string = self.findTime(string)
