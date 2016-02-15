@@ -34,7 +34,7 @@ cases = {
 
 count = 0
 for k  in cases.keys():
-  pr = RegexParser()
+  pr = RegexParser() # create an object and run on the string
   line  ,dic, revDic= pr.run(k)
   line = line.strip(" ")
   if line != cases[k].strip(" "):

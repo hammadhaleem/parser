@@ -25,6 +25,7 @@ mapp = {
 }
 
 class RegexParser(object):
+    # pattern for finding the digits
     pattern = re.compile(r"\d*\d:?\d\d-\d*\d:?\d\d|\d-?\d?")
     day_loop =[0,1,2,3,4,5,6,0,1,2,3,4,5,6]
     temp = []
@@ -32,6 +33,7 @@ class RegexParser(object):
     def __init__(self):
         super(RegexParser, self).__init__()
         
+    ### clean the string according to the constraints.
     def clean(self,string ):
             string  = string.replace("–","-").lower()
 
@@ -52,15 +54,18 @@ class RegexParser(object):
             string  = "S" + string 
             return string
 
+    # find all the patterns in the input strings
     def paternize(self,string):
             temp = re.findall(self.pattern, string )
             return temp
 
+    # utility for splitting the numbers
     def splInt(self, number):
         if number < 10:
             return "0"+str(number)
         return str(number)
 
+    # convert to military time
     def toMilitaryTime(self , times ):
         time = times.split(":")
         try:
@@ -70,6 +75,7 @@ class RegexParser(object):
         except Exception as e:
             return times
 
+    #utility for adding bars 
     def _add_bar(self , lis , bar = "-"):
         stri = ""
         for i in lis :
@@ -77,6 +83,7 @@ class RegexParser(object):
 
         return stri[:len(stri)-1]
 
+    # find time in the string 
     def findTime(self , lis):
         ret = []
         stri = self._add_bar(lis, " == ")
@@ -94,7 +101,7 @@ class RegexParser(object):
                 ret.append("S"+elem)
         return ret
 
-
+    # construct series in the day string. between two days find the correct order.
     def constructSeries(self , string):
         string  = string[1:]
         try:
@@ -157,6 +164,7 @@ class RegexParser(object):
         stri = "S"+tmp
         return stri[:len(stri)-1]
 
+    # convert time to militarry time
     def timeToStr(self, time):
         if time < 10 : 
             return "000" +str(time)
