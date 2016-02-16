@@ -24,6 +24,28 @@ mapp = {
     "sat": 6
 }
 
+chinese_to_english = [
+ ("星期一至五","mon.-fri."),
+ ("星期六、日及公眾假期","sat.-sun.&public holidays"),
+
+ ("早餐(星期一至六)","Breakfast (Weekday)"),
+ ("早餐(星期日及公眾假期)","Breakfast (Sunday and Public Holiday)"),
+ ("星期日", "sun"),
+ ("至六","sat "),
+ ("至日","sun "),
+ ("一至" , "to"),
+ ("星期","mon "),
+ ("午餐","lunch"),
+ ("晚餐","dinner"),
+ ("露台咖啡廳","Verandah Café "),
+ ("糕點及三文治於","cakes and sandwiches only available from "),
+ ("供應"," daily"),
+ ("至五", "fri "),
+ ("\n", ";"),
+ ("一", " - "),
+ ("weekday","mon to fri"),
+ ("–"," - ")
+]
 class RegexParser(object):
     # pattern for finding the digits
     pattern = re.compile(r"\d*\d:?\d\d-\d*\d:?\d\d|\d-?\d?")
@@ -35,8 +57,10 @@ class RegexParser(object):
         
     ### clean the string according to the constraints.
     def clean(self,string ):
-            string  = string.lower().replace("–","-").replace("weekday","mon to fri")
+            for i in chinese_to_english : 
+                string = string.replace(i[0],i[1])
 
+            string  = string.lower()
             for day in days:
                 if day in string :
                     string  = string .replace(day, str(mapp[days[day]]))
@@ -213,7 +237,7 @@ class RegexParser(object):
 
     def toSeqDic(self , string):
         # generate dat aggregated sequence dictionary for computation.
-        lis = string.split(";")
+        lis = string.replace(":;",",").split(";")
         dic = {}
         for elem in lis : 
             elem = elem.split(":")
