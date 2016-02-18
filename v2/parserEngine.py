@@ -2,12 +2,14 @@
 # -*- coding: utf-8 -*- 
 
 import re
+import collections
+
+conf_step = 10
 class RegexParser(object):
 
-	data_dic = {}
 	
 	day_seq = ["sun","mon","tue","wed","thu","fri","sat","sun","mon","tue","wed","thu","fri","sat"]
-	number = "0,1,2,3,4,5,6,0,1,2,3,4,5,6"
+	number = "0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6"
 	mapp = {
 		"sun": 0,
 		"mon": 1,
@@ -36,7 +38,7 @@ class RegexParser(object):
 		("至五", "fri "),
 		("\n", ";"),
 		("一", " - "),
-		("weekday","mon to fri"),
+		("Breakfast (Weekday)","mon to fri"),
 		("–"," - ")
 	]
 
@@ -54,6 +56,7 @@ class RegexParser(object):
 
 	def __init__(self, string):
 		super(RegexParser, self).__init__()
+		self.data_dic = {}
 		self.string = string
 
 	def transformations(self):
@@ -90,18 +93,29 @@ class RegexParser(object):
 			return t1 +"-" +t2
 
 	def timeToSeconds(self, number):
-		return int(number[0:1])*60*60 + int(number[2:])*60
+		if len(number) < 4:
+			n1 = number[0:1]
+			n2 = number[1:]
+		else:
+			n1 = number[0:2]
+			n2 = number[2:]
+		if int(n1) < 10:
+			n1 = "0"+n1 
+		if int(n2) < 10:
+			n2 = "0"+n2
+		return int(n1)*60*60 + int(n2)*60
 
 
 	# takes two numbers in strings
-	def timeSequence(self , number1 , number2 , step = 30):
-		lis = []
+	def timeSequence(self , number1 , number2 , step = conf_step):
+
+		lis = list()
 		number1 = self.timeToSeconds(number1)
 		number2 = self.timeToSeconds(number2) +step
 		while  number1 < number2:
 			lis.append(number1)
 			number1 = number1 + step
-		return lis
+		return lis 
 
 	def primitive_parser(self):
 		string = self.string + " "
@@ -172,6 +186,28 @@ class RegexParser(object):
 		
 		return days_stri[1:]
 
+	def sec_to_string(self, seconds):
+		hr = int((seconds) / 3600)
+		mini = (seconds - (hr*60*60))/60
+		if hr < 10:
+			hr = "0" +str(hr)
+		if mini < 10:
+			mini = "0" +str(mini)
+		return str(hr) + str(mini)
+
+	def getDistinctIntervals(self, time_list):
+		interval = []
+		old = time_list[0]
+		prev = None
+		for item in time_list:
+			if prev is not None and item - prev != conf_step :
+				interval.append( self.sec_to_string(old) +"-"+ self.sec_to_string(prev))
+				old = item
+				prev = item
+			prev = item
+		interval.append( self.sec_to_string(old)+"-"+self.sec_to_string(time_list.pop())) 
+		return interval
+
 	def extendliterals(self):
 		dic = {}
 		stri = ""
@@ -191,17 +227,98 @@ class RegexParser(object):
 
 		for k  in dic.keys():
 			days = self.toProperdays(k).split(",")
+			times = dic[k].split(";")
+			time_intervals = []
+			for time in times :
+				time = time.split("-")
+				time_intervals = time_intervals + self.timeSequence(time[0], time[1])
 			for d in days:
-				times = dic[k].split(";")
 				try:
-					self.data_dic[d] = sorted(set(self.data_dic[d]+ [times]))
+					self.data_dic[d] = sorted(list(set(self.data_dic[d]+ [time_intervals])))
 				except:
-					self.data_dic[d] = sorted(set(times))
+					self.data_dic[d] = sorted(list(set(time_intervals)))
+		# print self.data_dic
+		new_dic = {}
+		for k in self.data_dic.keys():
+			new_dic[k] = self.getDistinctIntervals(self.data_dic[k])
+		self.data_dic = new_dic
 
+	def groupByTime(self):
+		tmp = {}
+		for k in self.data_dic.keys():
+			for time in self.data_dic[k]:
+				try:
+					tmp[time].append(k)
+				except:
+					tmp[time] =[]
+					tmp[time].append(k)
+		for k in tmp.keys():
+			tmp[k] = self.listToString(sorted(tmp[k], reverse = True) , ",")[1:]
+		self.date_dic = tmp
+
+		for k in self.data_dic.keys():
+			self.data_dic[k] = self.listToString(self.data_dic[k], ",")[1:]
+
+	def findKeyValueSets(self):
+		new_dic = {}
+		for day in self.data_dic.keys():
+			for time in self.date_dic.keys():
+				for dy in self.date_dic[time]:
+					days = dy
+					if day in days:
+						try:
+							new_dic[day] = list(set(sorted(new_dic[day] + [time])))
+						except : 
+							new_dic[day] = []
+							new_dic[day].append(time)
+		for k in new_dic:
+			new_dic[k] =self.listToString(sorted(new_dic[k]) , ",")[1:]
+		self.final_dic = new_dic
+
+	def get_seq(self ,stri):
+		if len(stri) > 1:
+			try:
+				index = self.number.index(stri)
+				return self.number[index] +"-"+self.number[index+len(stri)-1]
+			except Exception as e:
+				stri = self.listToString(sorted(stri.split(","), reverse =True),",")[1:]
+				index = self.number.index(stri)
+				return self.number[index] +"-"+self.number[index+len(stri)-1]
+		return stri
+
+	def generate_string(self):
+		group_by_value = {}
+		tmp = self.final_dic
+		for k in tmp.keys():
+			try:
+				group_by_value[tmp[k]]  = sorted(group_by_value[tmp[k]] + [k])
+			except :
+				group_by_value[tmp[k]]  = [] + [k]
+
+		for k in group_by_value.keys():
+			group_by_value[k] = self.listToString(sorted(group_by_value[k]) , ",")[1:]
+
+		group_by_value = {v: k for k, v in group_by_value.items()}
+		group_by_value = collections.OrderedDict(sorted(group_by_value.items()))
+		# print group_by_value
+		stri = "S"
+		lis = []
+		for k in group_by_value.keys():
+			lis.append (self.get_seq(k) + ":" + group_by_value[k] )
+		stri = "S"+self.listToString(sorted(lis), ";")[1:]
+		self.string = stri
 
 	def run(self):
 		self.transformations()
-		self.primitive_parser()
-		self.extendliterals()
-		print self.data_dic  # { day1 : times1 , day2 : times2 , day3 : times3 }
+		try:
+			self.primitive_parser()
+			self.extendliterals()
+			self.groupByTime()
+			self.findKeyValueSets()
+			self.generate_string()
+		except Exception as e:
+			print e
+			print self.string
+		# print self.date_dic
+		# print self.final_dic 
 		return self.string

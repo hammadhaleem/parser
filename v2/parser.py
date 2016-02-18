@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-from parserEngine import * 
+from parserEngine import RegexParser 
 
 
 cases = {
-    # 'Sunday: 7:00 to 11:00': 'S0:0700-1100'
-  # , 'Sunday: 15:00 to 1:00': 'S0:1500-2500'
-  # , 'Sun: 07:00-00:00': 'S0:0700-2400'
+    'Sunday: 7:00 to 11:00': 'S0:0700-1100'
+  , 'Sunday: 15:00 to 1:00': 'S0:1500-2500'
+  , 'Sun: 07:00-00:00': 'S0:0700-2400'
   # , 'Mon-Sun: 12:30-01:00': 'S0-6:1230-2500'
   # , 'Mon to Sun: 06:30 - 22:30': 'S0-6:0630-2230'
   # , 'Fri to Tue: 06:30 - 22:30': 'S5-2:0630-2230'
@@ -26,8 +26,7 @@ cases = {
   # , 'Monday to Sunday & Public Holiday:\n12:00-15:00, 18:00-00:00': 'S0-6:1200-1500,1800-2400'
   # , 'Restaurant Mon-Sun: 06:30-23:00\nBar Mon-Sun: 15:00-00:00\nBe on Canton Mon-Sun: 12:00-00:00': 'S0-6:0630-2400'
   # , 'Mon-Sat: 2300-2500,0600-0800': 'S1-6:0600-0800,2300-2500'
-  # , 'Mon-Sat: 0000-2300,2301-2800': 'S1-6:0000-2300,2301-2800'   ##  MY output : S1-6:0000-2800 , which is logically correct.
-   'Mon-Sat: 0000-2300,2301-2800': 'S1-6:0000-2800'
+   ,'Mon-Sat: 0000-2300,2301-2800': 'S1-6:0000-2300,2301-2800'   
   # , 'Fri-Sat: 0000-2300, Mon: 0000-2300': 'S1,5-6:0000-2300'
   # , 'Fri-Sat: 0000-2300, Mon: 0000-2301': 'S1:0000-2301;5-6:0000-2300'
   # , 'Mon.-Sun.: 12:00-22:30': 'S0-6:1200-2230'
@@ -51,11 +50,11 @@ cases = {
 
 count = 0
 for k  in cases.keys():
-  pr = RegexParser(k) # create an object and run on the string
-  line = pr.run()
+  line = RegexParser(k).run()
   line = line.strip(" ")
   if line != cases[k].strip(" "):
     print "\n","Failed : \n\t", line , "\n\t" , k ,"\n", cases[k].strip(" ")
+    count = count + 1
   else:
     print   "Passed : " , True , ":" ,  line 
 
