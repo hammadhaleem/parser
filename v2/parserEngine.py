@@ -225,21 +225,30 @@ class RegexParser(object):
 				old = "stri"
 			else:
 				dt = dt + ";" + el
-				dic[stri[1:]] = dt[1:]
+				try:
+					dic[stri[1:]].append(dt[1:])
+				except:
+					dic[stri[1:]] = [dt[1:]]
 				old = "dt"
 
 		for k  in dic.keys():
+			dic[k] = self.listToString(sorted(dic[k]),";") [1:]
+
+		for k  in dic.keys():
 			days = self.toProperdays(k).split(",")
-			times = dic[k].split(";")
+			times = set(dic[k].split(";"))
 			time_intervals = []
 			for time in times :
 				time = time.split("-")
-				time_intervals = time_intervals + self.timeSequence(time[0], time[1])
+				time_intervals =list( set(sorted(time_intervals + self.timeSequence(time[0], time[1])))) #self.timeSequence(time[0], time[1])
+				
 			for d in days:
 				try:
-					self.data_dic[d] = sorted(list(set(self.data_dic[d]+ [time_intervals])))
-				except:
+					sets = sorted(set(list(set(self.data_dic[d])) + time_intervals))
+					self.data_dic[d] =  sets
+				except Exception as e:
 					self.data_dic[d] = sorted(list(set(time_intervals)))
+				
 		# print self.data_dic
 		new_dic = {}
 		for k in self.data_dic.keys():
@@ -257,6 +266,7 @@ class RegexParser(object):
 				except:
 					tmp[time] =[]
 					tmp[time].append(k)
+
 		for k in tmp.keys():
 			tmp[k] = self.listToString(sorted(tmp[k], reverse = True) , ",")[1:]
 		self.date_dic = tmp
@@ -357,10 +367,6 @@ class RegexParser(object):
 			self.groupByTime()
 			self.findKeyValueSets()
 			self.generate_string()
-			# print self.string
-			# print self.date_dic
-			# print self.final_dic 
-			# print self.group_by_value
 		except Exception as e:
 			print e
 			print self.string
