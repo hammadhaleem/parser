@@ -10,7 +10,7 @@ class RegexParser(object):
 
 	
 	day_seq = ["sun","mon","tue","wed","thu","fri","sat","sun","mon","tue","wed","thu","fri","sat"]
-	number = "01234560123"
+	number = "012345601234560123456"
 	mapp = {
 		"sun": 0,
 		"mon": 1,
@@ -45,38 +45,22 @@ class RegexParser(object):
 		("and Public Holiday" ," ")
 	]
 
+	def __init__(self, string):
+		super(RegexParser, self).__init__()
+		self.data_dic = {}
+		self.string = string
+
+#### Utility functions 
 	def listToString(self , lis ,deli = ""):
 		stri = ""
 		for i in lis:
 			stri = stri + deli + str(i) 
 		return stri
 
+#### Time functions 
+
 	def date_normal(self , stri):
 		return re.findall(r"\d*\d:\d\d-\d*\d:\d\d|\d\d\d\d-\d\d\d\d" , stri)
-
-	def days_find(self , stri):
-		return re.findall(r"sun|mon|tue|wed|thu|fri|sat|and", stri)
-
-	def __init__(self, string):
-		super(RegexParser, self).__init__()
-		self.data_dic = {}
-		self.string = string
-
-	def transformations(self):
-		string = self.string
-
-		for i in self.chinese_to_english : 
-			string = string.replace(i[0],i[1])
-		
-		string  = string.lower()
-		
-		string  = str(re.sub(r' *to *', "-", string ))
-		string  = str(re.sub(r' *- *', "-",  string ))
-		string  = str(re.sub(r' *: *', ":",  string ))
-		string  = str(re.sub(r' *& *', " and ",  string ))
-		string  = string.replace(".", "")
-		string  = string.replace("\\n", ";")
-		self.string = string
 
 	def millitary_time(self , time):
 		if re.findall(r"\d*\d\d\d-\d*\d\d\d" , time):
@@ -94,6 +78,28 @@ class RegexParser(object):
 			if (int(t1) > int(t2)):
 				t2 = str(int(t2) + 2400)
 			return t1 +"-" +t2
+
+	def sec_to_string(self, seconds):
+		hr = int((seconds) / 3600)
+		mini = (seconds - (hr*60*60))/60
+		if hr < 10:
+			hr = "0" +str(hr)
+		if mini < 10:
+			mini = "0" +str(mini)
+		return str(hr) + str(mini)
+
+	def getDistinctIntervals(self, time_list):
+		interval = []
+		old = time_list[0]
+		prev = None
+		for item in time_list:
+			if prev is not None and item - prev != conf_step :
+				interval.append( self.sec_to_string(old) +"-"+ self.sec_to_string(prev))
+				old = item
+				prev = item
+			prev = item
+		interval.append( self.sec_to_string(old)+"-"+self.sec_to_string(time_list.pop())) 
+		return interval
 
 	def timeToSeconds(self, number):
 		if len(number) < 4:
@@ -120,26 +126,7 @@ class RegexParser(object):
 			number1 = number1 + step
 		return lis 
 
-	def primitive_parser(self):
-		string = self.string + " "
-		ptr = 0
-		window = []
-		literals = []
-		while ptr < len(string):
-			window.append(string[ptr])
-			find_words = self.days_find(self.listToString(window))
-			find_dates = self.date_normal(self.listToString(window))
-			if len(find_words) > 0:
-				for el in find_words:
-					literals.append("X"+el)
-				window = []
-
-			elif len(find_dates)>0:
-				for el in find_dates:
-					literals.append(self.millitary_time(el))
-				window = []
-			ptr = ptr + 1
-		self.literals = literals
+#### Keys functions
 
 	def get_day_seq(self, elems):
 		rem = ['and' , 'None']
@@ -189,28 +176,54 @@ class RegexParser(object):
 		
 		return days_stri[1:]
 
-	def sec_to_string(self, seconds):
-		hr = int((seconds) / 3600)
-		mini = (seconds - (hr*60*60))/60
-		if hr < 10:
-			hr = "0" +str(hr)
-		if mini < 10:
-			mini = "0" +str(mini)
-		return str(hr) + str(mini)
+	def days_find(self , stri):
+		return re.findall(r"sun|mon|tue|wed|thu|fri|sat|and", stri)
 
-	def getDistinctIntervals(self, time_list):
-		interval = []
-		old = time_list[0]
-		prev = None
-		for item in time_list:
-			if prev is not None and item - prev != conf_step :
-				interval.append( self.sec_to_string(old) +"-"+ self.sec_to_string(prev))
-				old = item
-				prev = item
-			prev = item
-		interval.append( self.sec_to_string(old)+"-"+self.sec_to_string(time_list.pop())) 
-		return interval
+	
+#### functions for other stuff !!
 
+## perform string transformations
+	def transformations(self):
+		string = self.string
+
+		for i in self.chinese_to_english : 
+			string = string.replace(i[0],i[1])
+		
+		string  = string.lower()
+		
+		string  = str(re.sub(r' *to *', "-", string ))
+		string  = str(re.sub(r' *- *', "-",  string ))
+		string  = str(re.sub(r' *: *', ":",  string ))
+		string  = str(re.sub(r' *& *', " and ",  string ))
+		string  = string.replace(".", "")
+		string  = string.replace("\\n", ";")
+		self.string = string
+
+## Perform string parsing 
+	def primitive_parser(self):
+		string = self.string + " "
+		ptr = 0
+		window = []
+		literals = []
+		while ptr < len(string):
+			window.append(string[ptr])
+			find_words = self.days_find(self.listToString(window))
+			find_dates = self.date_normal(self.listToString(window))
+			if len(find_words) > 0:
+				for el in find_words:
+					literals.append("X"+el)
+				window = []
+
+			elif len(find_dates)>0:
+				for el in find_dates:
+					literals.append(self.millitary_time(el))
+				window = []
+			ptr = ptr + 1
+		self.literals = literals
+
+
+
+## get more extensive literals
 	def extendliterals(self):
 		dic = {}
 		stri = ""
@@ -257,6 +270,7 @@ class RegexParser(object):
 		
 		self.data_dic = new_dic
 
+## group by time matrix
 	def groupByTime(self):
 		tmp = {}
 		for k in self.data_dic.keys():
@@ -274,6 +288,7 @@ class RegexParser(object):
 		for k in self.data_dic.keys():
 			self.data_dic[k] = self.listToString(self.data_dic[k], ",")[1:]
 
+### create a reverse dictionary
 	def findKeyValueSets(self):
 		new_dic = {}
 		for day in self.data_dic.keys():
@@ -290,8 +305,15 @@ class RegexParser(object):
 			new_dic[k] =self.listToString(sorted(new_dic[k]) , ",")[1:]
 		self.final_dic = new_dic
 
+## generate sequence of days
 	def get_seq(self ,stri):
 		if len(stri) > 1:
+			m =  stri.replace(",","")[::-1]
+			try:
+				if self.number.index(m) :
+					return m[0] + "-" + m[len(m)-1]
+			except:
+				pass
 			# try:
 			# 	try:
 			# 		index = self.number.index(stri)
@@ -337,6 +359,7 @@ class RegexParser(object):
 				stri = ret[1:]
 		return stri
 
+## dictionary to human readable string
 	def generate_string(self):
 		group_by_value = {}
 		tmp = self.final_dic
@@ -356,6 +379,8 @@ class RegexParser(object):
 		lis = []
 		for k in group_by_value.keys():
 			lis.append (self.get_seq(k) + ":" + group_by_value[k] )
+			
+	
 		stri = "S"+self.listToString(sorted(lis), ";")[1:]
 		self.string = stri
 
