@@ -3,13 +3,14 @@
 
 import re
 import collections
+import itertools
 
 conf_step = 10
 class RegexParser(object):
 
 	
 	day_seq = ["sun","mon","tue","wed","thu","fri","sat","sun","mon","tue","wed","thu","fri","sat"]
-	number = "0,1,2,3,4,5,6,0,1,2,3,4,5,6,0,1,2,3,4,5,6"
+	number = "01234560123"
 	mapp = {
 		"sun": 0,
 		"mon": 1,
@@ -32,14 +33,16 @@ class RegexParser(object):
 		("星期","mon "),
 		("午餐","lunch"),
 		("晚餐","dinner"),
-		("露台咖啡廳","Verandah Café "),
+		("露台咖啡廳",""),
+		("Verandah Café", ""),
 		("糕點及三文治於","cakes and sandwiches only available from "),
 		("供應"," daily"),
 		("至五", "fri "),
 		("\n", ";"),
 		("一", " - "),
 		("Breakfast (Weekday)","mon to fri"),
-		("–"," - ")
+		("–"," - "),
+		("and Public Holiday" ," ")
 	]
 
 	def listToString(self , lis ,deli = ""):
@@ -240,7 +243,9 @@ class RegexParser(object):
 		# print self.data_dic
 		new_dic = {}
 		for k in self.data_dic.keys():
-			new_dic[k] = self.getDistinctIntervals(self.data_dic[k])
+			if k != '':
+				new_dic[k] = self.getDistinctIntervals(self.data_dic[k])
+		
 		self.data_dic = new_dic
 
 	def groupByTime(self):
@@ -277,13 +282,49 @@ class RegexParser(object):
 
 	def get_seq(self ,stri):
 		if len(stri) > 1:
-			try:
-				index = self.number.index(stri)
-				return self.number[index] +"-"+self.number[index+len(stri)-1]
-			except Exception as e:
-				stri = self.listToString(sorted(stri.split(","), reverse =True),",")[1:]
-				index = self.number.index(stri)
-				return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# try:
+			# 	try:
+			# 		index = self.number.index(stri)
+			# 		return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# 	except Exception as e:
+			# 		stri = self.listToString(sorted(stri.split(","), reverse =True),",")[1:]
+			# 		index = self.number.index(stri)
+			# 		return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# except Exception as e:
+			# 	t = stri.split(",")
+			# 	for i in itertools.permutations(t, len(t)):
+			# 		i = self.listToString(i,",")[1:]
+			# 		try:
+			# 			index = self.number.index(i)
+			# 			return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# 		except:				
+			# 			pass
+
+				t = stri.split(",")
+				lis = []
+
+				for i in range(len(t)):
+					lis.append(self.number.index(t[i]))
+				lis = sorted(lis)
+				interval = []
+				old = lis[0]
+				prev = None
+				for item in lis:
+					if prev is not None and item - prev != 1 :
+						interval.append((old ,prev))
+						old = item
+						prev = item
+					prev = item
+				interval.append( (old ,lis.pop()))
+				interval= sorted(interval) 
+				ret = ""
+				for i in interval:
+					if(i[0] != i[1]):
+						ret = ret + "," + self.number[i[0]] +"-"+self.number[i[1]]
+					else:
+						ret = ret + "," + self.number[i[0]] 
+				
+				stri = ret[1:]
 		return stri
 
 	def generate_string(self):
@@ -300,7 +341,7 @@ class RegexParser(object):
 
 		group_by_value = {v: k for k, v in group_by_value.items()}
 		group_by_value = collections.OrderedDict(sorted(group_by_value.items()))
-		# print group_by_value
+		self.group_by_value =group_by_value
 		stri = "S"
 		lis = []
 		for k in group_by_value.keys():
@@ -316,9 +357,14 @@ class RegexParser(object):
 			self.groupByTime()
 			self.findKeyValueSets()
 			self.generate_string()
+			# print self.string
+			# print self.date_dic
+			# print self.final_dic 
+			# print self.group_by_value
 		except Exception as e:
 			print e
 			print self.string
-		# print self.date_dic
-		# print self.final_dic 
+			print self.date_dic
+			print self.final_dic 
+			print self.group_by_value
 		return self.string
