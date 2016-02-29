@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-from parserEngine import RegexParser 
-
+from classes import * 
 
 cases = {
     'Sunday: 7:00 to 11:00': 'S0:0700-1100'
@@ -47,10 +46,22 @@ cases = {
   }
 
 
+
+def run(input):
+  line = stringCleaning(k)
+  line.clean()
+  line = line.get_string()
+  line = line.strip(" ")
+  tokens = stringToToken(line)
+  tokens.parse()
+  tokens.extendliterals()
+  tokens.to_dateTimeVector()
+  output = tokens.get_dateTimeVector()
+  return output
+
 count = 0
 for k  in cases.keys():
-  line = RegexParser(k).run()
-  line = line.strip(" ")
+  line = run(k)
   if line != cases[k].strip(" "):
     print "\n","Failed : \n\t out ", line , "\n\t In " , k.replace("\n","") ,"\n\t expected ", cases[k].strip(" ") ,"\n\n"
     count = count + 1
@@ -58,4 +69,7 @@ for k  in cases.keys():
     print   "Passed : " , True , ":" ,  line 
 
 print "Total Erorrs  : " , count
+
+
+
 
