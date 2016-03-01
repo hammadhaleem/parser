@@ -4,7 +4,7 @@
 from utils import *
 
 class  OpenTimesByDay(object):
-	"""docstring for  Day"""
+	"""Process the day. """
 
 	
 	def __init__(self, day, lis):
