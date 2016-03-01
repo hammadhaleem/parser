@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
 
-from TimeParser import * 
+import unittest
+
+from TimeParser.classes import *
+
 
 cases = {
     'Sunday: 7:00 to 11:00': 'S0:0700-1100'
@@ -44,19 +47,11 @@ cases = {
   , 'Breakfast (Weekday): 07:00-10:00\nBreakfast (Sunday and Public Holiday): 07:00-10:30\nLunch: 12:00-14:30\nDinner: 18:00-22:00\nVerandah Café : 07:00-23:00 (cakes and sandwiches only available from 14:00-18:00 daily)': 'S0:0700-2300;1-5:0700-1000'
   , '早餐(星期一至六): 07:00-10:00\n早餐(星期日及公眾假期): 07:00-10:30\n午餐: 12:00-14:30\n晚餐: 18:00-22:00\n露台咖啡廳: 07:00-23:00 (糕點及三文治於14:00-18:00供應)': 'S0:0700-2300;1-5:0700-1000'
   , '星期一至星期日: 07:00-21:00': 'S0-6:0700-2100'
-  }
+}
 
 
+class TestCases(unittest.TestCase):
 
-count = 0
-for k  in cases.keys():
-  line = Runner().run(k)
-  if line != cases[k].strip(" "):
-    print "\n","Failed : \n\t out ", line , "\n\t In " , k.replace("\n","") ,"\n\t expected ", cases[k].strip(" ") ,"\n\n"
-    count = count + 1
-  else:
-    print   "Passed : " , True , ":" ,  line 
-
-print "Total Erorrs  : " , count
-
-
+  def test_all_inputs(self):
+    for k in cases.keys():
+      self.assertEqual(Runner().run(k) , cases[k] )

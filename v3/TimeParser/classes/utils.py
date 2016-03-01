@@ -102,7 +102,6 @@ class Utils(object):
 
 	def toProperdays(self , days_stri):
 		days = days_stri.split(";")
-		print days
 		old = None
 		lis = []
 		for day in days:
@@ -120,5 +119,5 @@ class Utils(object):
 		for i in set(other_lis):
 			ret.append(self.mapp[i])
 		days_stri= self.listToString(sorted(ret),",")
-		print days_stri[1:]
+	
 		return days_stri[1:]
