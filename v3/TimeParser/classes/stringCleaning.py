@@ -51,6 +51,7 @@ class stringCleaning(object):
 		string  = string.replace("\\n", ";")
 		self.string = string
 
+
 	def get_string(self):
 		return self.string
 	

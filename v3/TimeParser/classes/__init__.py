@@ -14,7 +14,7 @@ class Runner(object):
     line   = stringCleaning(inp)
     line.clean()
     line   = line.get_string().strip(" ")
-
+    
     tokens = stringToToken(line)
     tokens.parse()
     tokens.extendliterals()

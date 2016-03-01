@@ -3,6 +3,7 @@
 
 from utils import *
 
+
 class  OpenTimesByDay(object):
 	"""Process the day. """
 

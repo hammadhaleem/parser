@@ -128,6 +128,7 @@ class stringToToken(object):
 	def to_dateTimeVector(self):
 		self.dateTimeVector =[]
 		for  k in self.data_dic.keys():
+			
 			self.dateTimeVector.append(OpenTimesByDay(k , self.data_dic[k]))
 
 	def get_dateTimeVector(self):
