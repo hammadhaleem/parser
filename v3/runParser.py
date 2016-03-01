@@ -47,18 +47,6 @@ cases = {
 
 
 
-def run(input):
-  line = stringCleaning(k)
-  line.clean()
-  line = line.get_string()
-  line = line.strip(" ")
-  tokens = stringToToken(line)
-  tokens.parse()
-  tokens.extendliterals()
-  tokens.to_dateTimeVector()
-  output = tokens.get_dateTimeVector()
-  return output
-
 count = 0
 for k  in cases.keys():
   line = run(k)

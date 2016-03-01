@@ -15,6 +15,19 @@ class  OpenTimesByDay(object):
 	def __repr__(self):
 		return "<"+self.day + ":" + Utils().listToString(self.times,",")[1:] +">"
 
+	def sorted_times(self):
+		return sorted(self.times)
+
+	def __eq__(self, other):
+		return sorted(self.times) == other.sorted_times()
+		
+	def __lt__(self, other):
+		return int(self.day) < int(other.day)
+
+	def __gt__(self, other):
+		return int(self.day) > int(other.day)
+
+
 class  OpenTimes(object):
 	def __init__(self, time, days):
 		self.time = time
