@@ -1,0 +1,183 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*- 
+
+import re
+import collections
+import itertools
+
+conf_step = 10
+
+class RegexParser(object):
+
+	
+
+	def getDistinctIntervals(self, time_list):
+		interval = []
+		old = time_list[0]
+		prev = None
+		for item in time_list:
+			if prev is not None and item - prev != conf_step :
+				interval.append( self.sec_to_string(old) +"-"+ self.sec_to_string(prev))
+				old = item
+				prev = item
+			prev = item
+		interval.append( self.sec_to_string(old)+"-"+self.sec_to_string(time_list.pop())) 
+		return interval
+
+	def timeToSeconds(self, number):
+		if len(number) < 4:
+			n1 = number[0:1]
+			n2 = number[1:]
+		else:
+			n1 = number[0:2]
+			n2 = number[2:]
+		if int(n1) < 10:
+			n1 = "0"+n1 
+		if int(n2) < 10:
+			n2 = "0"+n2
+		return int(n1)*60*60 + int(n2)*60
+
+
+	# takes two numbers in strings
+	def timeSequence(self , number1 , number2 , step = conf_step):
+
+		lis = list()
+		number1 = self.timeToSeconds(number1)
+		number2 = self.timeToSeconds(number2) +step
+		while  number1 < number2:
+			lis.append(number1)
+			number1 = number1 + step
+		return lis 
+
+#### Keys functions
+
+
+
+
+
+## group by time matrix
+	def groupByTime(self):
+		tmp = {}
+		for k in self.data_dic.keys():
+			for time in self.data_dic[k]:
+				try:
+					tmp[time].append(k)
+				except:
+					tmp[time] =[]
+					tmp[time].append(k)
+
+		for k in tmp.keys():
+			tmp[k] = self.listToString(sorted(tmp[k], reverse = True) , ",")[1:]
+		self.date_dic = tmp
+
+		for k in self.data_dic.keys():
+			self.data_dic[k] = self.listToString(self.data_dic[k], ",")[1:]
+
+### create a reverse dictionary
+	def findKeyValueSets(self):
+		new_dic = {}
+		for day in self.data_dic.keys():
+			for time in self.date_dic.keys():
+				for dy in self.date_dic[time]:
+					days = dy
+					if day in days:
+						try:
+							new_dic[day] = list(set(sorted(new_dic[day] + [time])))
+						except : 
+							new_dic[day] = []
+							new_dic[day].append(time)
+		for k in new_dic:
+			new_dic[k] =self.listToString(sorted(new_dic[k]) , ",")[1:]
+		self.final_dic = new_dic
+
+## generate sequence of days
+	def get_seq(self ,stri):
+		if len(stri) > 1:
+			m =  stri.replace(",","")[::-1]
+			try:
+				if self.number.index(m) :
+					return m[0] + "-" + m[len(m)-1]
+			except:
+				pass
+			# try:
+			# 	try:
+			# 		index = self.number.index(stri)
+			# 		return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# 	except Exception as e:
+			# 		stri = self.listToString(sorted(stri.split(","), reverse =True),",")[1:]
+			# 		index = self.number.index(stri)
+			# 		return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# except Exception as e:
+			# 	t = stri.split(",")
+			# 	for i in itertools.permutations(t, len(t)):
+			# 		i = self.listToString(i,",")[1:]
+			# 		try:
+			# 			index = self.number.index(i)
+			# 			return self.number[index] +"-"+self.number[index+len(stri)-1]
+			# 		except:				
+			# 			pass
+
+				t = stri.split(",")
+				lis = []
+
+				for i in range(len(t)):
+					lis.append(self.number.index(t[i]))
+				lis = sorted(lis)
+				interval = []
+				old = lis[0]
+				prev = None
+				for item in lis:
+					if prev is not None and item - prev != 1 :
+						interval.append((old ,prev))
+						old = item
+						prev = item
+					prev = item
+				interval.append( (old ,lis.pop()))
+				interval= sorted(interval) 
+				ret = ""
+				for i in interval:
+					if(i[0] != i[1]):
+						ret = ret + "," + self.number[i[0]] +"-"+self.number[i[1]]
+					else:
+						ret = ret + "," + self.number[i[0]] 
+				
+				stri = ret[1:]
+		return stri
+
+## dictionary to human readable string
+	def generate_string(self):
+		group_by_value = {}
+		tmp = self.final_dic
+		for k in tmp.keys():
+			try:
+				group_by_value[tmp[k]]  = sorted(group_by_value[tmp[k]] + [k])
+			except :
+				group_by_value[tmp[k]]  = [] + [k]
+
+		for k in group_by_value.keys():
+			group_by_value[k] = self.listToString(sorted(group_by_value[k]) , ",")[1:]
+
+		group_by_value = {v: k for k, v in group_by_value.items()}
+		group_by_value = collections.OrderedDict(sorted(group_by_value.items()))
+		self.group_by_value =group_by_value
+		stri = "S"
+		lis = []
+		for k in group_by_value.keys():
+			lis.append (self.get_seq(k) + ":" + group_by_value[k] )
+			
+	
+		stri = "S"+self.listToString(sorted(lis), ";")[1:]
+		self.string = stri
+
+	def run(self):
+		try:
+			self.groupByTime()
+			self.findKeyValueSets()
+			self.generate_string()
+		except Exception as e:
+			print e
+			print self.string
+			print self.date_dic
+			print self.final_dic 
+			print self.group_by_value
+		return self.string
