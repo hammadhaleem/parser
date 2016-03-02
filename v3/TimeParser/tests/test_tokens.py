@@ -6,7 +6,7 @@ import unittest
 
 from TimeParser.classes import *
 
-class TestClean(unittest.TestCase):
+class TestTokens(unittest.TestCase):
 
 
 	def test_parsing(self):
